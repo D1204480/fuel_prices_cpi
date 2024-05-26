@@ -1,0 +1,94 @@
+<html>
+
+<head>
+  <title>Express</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+  
+</head>
+
+<body>
+  <h1>Express</h1>
+  <p>Welcome to Express</p>
+
+<!--產生 可以輸入 Year, Gasoline_92, Gasoline_95, Gasoline_98, SuperDiesel 的表單，不使用 action -->
+    <form id="fuel-form">
+        <label for="Year">Year:</label>
+        <input type="number" id="Year" name="Year" min="1900" max="2050" required><br><br>
+        
+        <label for="Gasoline_92">Gasoline_92:</label>
+        <input type="number" id="Gasoline_92" name="Gasoline_92" min="0" required><br><br>
+        
+        <label for="Gasoline_95">Gasoline_95:</label>
+        <input type="number" id="Gasoline_95" name="Gasoline_95" min="0" required><br><br>
+        
+        <label for="Gasoline_98">Gasoline_98:</label>
+        <input type="number" id="Gasoline_98" name="Gasoline_98" min="0" required><br><br>
+        
+        <label for="SuperDiesel">SuperDiesel:</label>
+        <input type="number" id="SuperDiesel" name="SuperDiesel" min="0" required><br><br>
+        
+        <button type="submit">Submit</button>
+    </form>
+    
+<!--   將上面表單的資料，透過 fetch async await 來發送 POST 請求到 /api/insert ，並在成功後，用 p 顯示伺服器回傳的【純文字】訊息，不是 json -->
+    <p id="result"></p>
+    <script>
+        document.getElementById('fuel-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const Year = document.getElementById('Year').value;
+            const Gasoline_92 = document.getElementById('Gasoline_92').value;
+            const Gasoline_95 = document.getElementById('Gasoline_95').value;
+            const Gasoline_98 = document.getElementById('Gasoline_98').value;
+            const SuperDiesel = document.getElementById('SuperDiesel').value;
+            const response = await fetch('/api/insert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ Year, Gasoline_92, Gasoline_95, Gasoline_98, SuperDiesel })
+            });
+            const result = await response.text();
+            document.getElementById('result').textContent = result;
+        });
+    </script>
+    
+    
+<!--按下顯示資料的按鈕，將使用 fetch async await 抓取 http://localhost:3000/api/fuel-prices 的 JSON ，JSON 包括 (Year, Gasoline_92, Gasoline_95, Gasoline_95, SuperDiesel) 等欄位，用 Table 顯示，使用 createElement -->
+  <button id="show-data">Show Data</button>
+  <table id="fuel-table">
+      <thead>
+      <tr>
+          <th>Year</th>
+          <th>Gasoline_92</th>
+          <th>Gasoline_95</th>
+          <th>Gasoline_98</th>
+          <th>SuperDiesel</th>
+      </tr>
+      </thead>
+      <tbody></tbody>
+  </table>
+  <script>
+      document.getElementById('show-data').addEventListener('click', async () => {
+          const response = await fetch('/api/fuel-prices');
+          const data = await response.json();
+          const tbody = document.querySelector('#fuel-table tbody');
+          tbody.innerHTML = '';
+          data.forEach(({ Year, Gasoline_92, Gasoline_95, Gasoline_98, SuperDiesel }) => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                    <td>${Year}</td>
+                    <td>${Gasoline_92}</td>
+                    <td>${Gasoline_95}</td>
+                    <td>${Gasoline_98}</td>
+                    <td>${SuperDiesel}</td>
+                `;
+              tbody.appendChild(tr);
+          });
+      });
+  </script>
+  
+  
+
+</body>
+
+</html>
