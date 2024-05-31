@@ -3,6 +3,7 @@
 <head>
   <title>Express</title>
   <link rel="stylesheet" href="/stylesheets/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
 </head>
 
@@ -49,6 +50,13 @@
             });
             const result = await response.text();
             document.getElementById('result').textContent = result;
+            
+            document.getElementById('Year').value = '';
+            document.getElementById('Gasoline_92').value = '';
+            document.getElementById('Gasoline_95').value = '';
+            document.getElementById('Gasoline_98').value = '';
+            document.getElementById('SuperDiesel').value = '';
+        
         });
     </script>
     
@@ -67,6 +75,9 @@
       </thead>
       <tbody></tbody>
   </table>
+  
+  <canvas id="gasPricesChart" width="400" height="200"></canvas>
+  
   <script>
       document.getElementById('show-data').addEventListener('click', async () => {
           const response = await fetch('/api/fuel-prices');
@@ -77,14 +88,70 @@
               const tr = document.createElement('tr');
               tr.innerHTML = `
                     <td>${Year}</td>
-                    <td>${Gasoline_92}</td>
-                    <td>${Gasoline_95}</td>
-                    <td>${Gasoline_98}</td>
-                    <td>${SuperDiesel}</td>
+                    <td>   ${Gasoline_92}</td>
+                    <td>   ${Gasoline_95}</td>
+                    <td>   ${Gasoline_98}</td>
+                    <td>   ${SuperDiesel}</td>
                 `;
               tbody.appendChild(tr);
           });
       });
+     
+   //依照歷史價格畫圖
+        const gasPricesChart = document.getElementById('gasPricesChart').getContext('2d');
+        let chart;
+        document.getElementById('show-data').addEventListener('click', async () => {
+            const response = await fetch('/api/fuel-prices');
+            const data = await response.json();
+            const years = [];
+            const gasoline92Prices = [];
+            const gasoline95Prices = [];
+            const gasoline98Prices = [];
+            const superDieselPrices = [];
+            data.forEach(({ Year, Gasoline_92, Gasoline_95, Gasoline_98, SuperDiesel }) => {
+                years.push(Year);
+                gasoline92Prices.push(Gasoline_92);
+                gasoline95Prices.push(Gasoline_95);
+                gasoline98Prices.push(Gasoline_98);
+                superDieselPrices.push(SuperDiesel);
+            });
+            if (chart) {
+                chart.destroy();
+            }
+            chart = new Chart(gasPricesChart, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: [
+                        {
+                            label: 'Gasoline 92',
+                            data: gasoline92Prices,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            fill: false
+                        },
+                        {
+                            label: 'Gasoline 95',
+                            data: gasoline95Prices,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            fill: false
+                        },
+                        {
+                            label: 'Gasoline 98',
+                            data: gasoline98Prices,
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            fill: false
+                        },
+                        {
+                            label: 'Super Diesel',
+                            data: superDieselPrices,
+                            borderColor: 'rgb(121,61,241)',
+                            fill: false
+                        }
+                    ]
+                }
+            });
+        });
+      
   </script>
   
   
